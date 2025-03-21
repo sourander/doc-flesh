@@ -90,12 +90,42 @@ Before proceeding syncing ANY templates to ANY repository, the tool verifies tha
 Running the sync runs the check command first and then proceeds to sync the files to the repositories.
 
 ```bash
-doc-flesh sync
+doc-flesh sync [--dry-run]
+```
+
+The sync command does the following:
+
+* Checks the repositories for dirtiness.
+* Copies the Jinja files to the repositories (using variables from the `$REPO/siteinfo.json` file).
+* Copies the static files to the repositories.
+* Commits the changes to the repositories.
+* Pushes the changes to the repositories.
+
+The `--dry-run` flag can be used to show what would be done without actually doing it. It will instead write the files into a temporary directory for inspection. Example below.
+
+```console
+$ uv run doc-flesh sync --dry-run
+🔍 Checking repo: /Users/janisou1/Code/sourander/oat
+🔄 Fetching updates from remote...
+✅ Repo is up-to-date with the remote.
+✅ Repo is clean and safe for automation.
+🔧 All files will be written to /private/var/folders/aa/hash/T/tmpe8u9pv9o under directories with the same name as each repository.
+🔧 Dry-run: skipping the Git operations.
+🎉 Sync complete.
+
+$ ls /private/var/folders/aa/hash/T/tmpe8u9pv9o
+/private/var/folders/6q/glcwrb855ss6mjvqhjzk4lbctxydll/T/tmpe8u9pv9o
+└── Oppimispäiväkirja 101
+    ├── docs
+    │   └── javascripts
+    │       └── mathjax.js
+    └── mkdocs.yml
+
+4 directories, 2 files
 ```
 
 ## Development notes
 
-* Add `siteinfo.json` Pydantic model to `src/models/`. This tool than also centrally check that each repo has a valid `siteinfo.json` file.
 * Add a `--dry-run` flag to the `sync` command to show what would be done without actually doing it. 
     * The files could be written to `output/repoconfig.name/../../file.txt` for inspection.
     * This is trickier with GitPython. It does not really have a dry-run mode. Maybe simple print the Python statements that would be executed?

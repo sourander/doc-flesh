@@ -1,3 +1,3 @@
-from doc_flesh.models.models import MyToolConfig, RepoConfig
+from doc_flesh.models.models import MyToolConfig, RepoConfig, SiteInfo
 
-__all__ = ["MyToolConfig", "RepoConfig"]
+__all__ = ["MyToolConfig", "RepoConfig", "SiteInfo"]

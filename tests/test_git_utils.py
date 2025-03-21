@@ -1,9 +1,5 @@
-import os
-import pytest
-from pathlib import Path
 
 from doc_flesh.git_utils import is_repo_safe, commit_and_push
-from doc_flesh.models import RepoConfig
 from git import Repo
 
 
