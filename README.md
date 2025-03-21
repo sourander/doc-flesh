@@ -1,21 +1,16 @@
 # doc-flesh
 
-Ah, some flesh for [doc-skeleton](https://github.com/sourander/doc-skeleton) template's bones This tool allows hosting canonical config files in HOME directory and syncing those to ALL repositories based on doc-skeleton locally.
+Ah, some flesh for [doc-skeleton](https://github.com/sourander/doc-skeleton) template's bones! This tool allows hosting canonical config files in HOME directory and syncing those to ALL repositories based on doc-skeleton locally.
 
-The affected repositories are listed at [sourander.github.io](https://sourander.github.io/) site, which is the index of all doc-skeleton based repositories. All these repositories share the same upstream, which could be handled using forking or subtree merging, but instead, I chose to use this tool for syncing the config files. The tool allows the repositories to be more independent. Each might have their own flavor of the config files, but the canonical ones are always available in the HOME directory.
+![alt](assets/template-flow.png)
 
-## How it Works
+**Diagram 1:** *The flow from `~/.config/.../` to X different repository directories explained as a diagram. The files are then committed and pushed to origin main.*
 
-To add local repositories to be managed by doc-flesh, add the repository names to the configuration file: `~/.config/doc-flesh/config.yaml`
-
-There are two sorts of files:
-
-* **JinjaFiles**: The files are expected to have a key for each value in the `siteinfo.json` file that is also used for updating the `sourander.github.io` site every night.
-* **StaticFiles**: These files are copied from the HOME directory to the repository as is.
+In the original creator's context, the affected repositories are listed at [sourander.github.io](https://sourander.github.io/) site. All these repositories share the same template Github project, called doc-skeleton. Syncing the changes could be done using Git submodules or clever forking and merges, but I chose to use this tool for syncing the config files. The tool allows the repositories to be more independent. Also, this allows clever tricks like running `uv lock --upgrade` in each repository to upgrade the dependencies in all repositories at once.
 
 ## Configuration
 
-The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. Each repository should have a `local_path` and a `name` key. The `local_path` should point to the local repository's root directory. The `name` key is used for logging purposes.
+The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. Each repository should have an absolute `local_path` and a `name` key. The `local_path` should point to the local repository's root directory. The `name` key is used for logging purposes.
 
 ```yaml
 Files: &defaults
@@ -39,24 +34,28 @@ ManagedRepos:
       - some/dynamic/config.yml
     static_files:
       - some/static/file/used/by/many/but/not/all.js
-
 ```
+
+There are two sorts of files:
+
+* **Jinja files**: The files are expected to have a key for each value in the `$REPO/siteinfo.json` file that is also used for updating the `sourander.github.io` site every night.
+* **Static files**: These files are copied from the HOME directory to the repository as is.
 
 ## Installation and Usage
 
-The tool can be run from GitHub. I will not be hosting it to PyPi, as it is a very specific tool. I may consider adding a self-hosted Python package index (e.g. devpi) later.
+The tool is meant to be run locally using [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# Install and run
-uvx --from git+https://github.com/sourander/doc-flesh doc-flesh --help
+# Clone
+git clone $url
 
-# Or run locally cloned repository
+# Run
 uv run doc-flesh --help
 ```
 
 ### Commands
 
-It is assumed that all commands below are prefixed with `uv run` or `uvx --from git+...` as shown above.
+It is assumed that all commands below are prefixed with `uv run` as shown above.
 
 #### Check
 
