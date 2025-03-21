@@ -14,10 +14,11 @@ class SiteCategory(str, Enum):
 class SiteInfo(BaseModel):
     """Each repository should have a site info file in the project root."""
 
-    # MkDocs configuration
+    # MkDocs
     site_name: str
+    site_uses_mathjax: bool = False
 
-    # Needed by sourander.github.io index site
+    # sourander.github.io
     category: SiteCategory
     related_repo: str = ""
 

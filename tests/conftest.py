@@ -81,14 +81,18 @@ def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
     """Fixture to create a mock MyToolConfig with temporary directories."""
 
     repo1_siteinfo = SiteInfo(
-        site_name="Defined in conftest 1", category="Learning tools", related_repo="[Something](https://example.com)"
+        site_name="Defined in conftest 1", 
+        category="Learning tools", 
+        related_repo="[Something](https://example.com)"
     )
     repo1_path = tmp_path / "repo1"
     repo1_path.mkdir()
     (repo1_path / "siteinfo.json").write_text(repo1_siteinfo.model_dump_json())
 
     repo2_siteinfo = SiteInfo(
-        site_name="Defined in conftest 2", category="Learning tools"
+        site_name="Defined in conftest 2",
+        category="Learning tools",
+        site_uses_mathjax=True,
     )
     repo2_path = tmp_path / "repo2"
     repo2_path.mkdir()
@@ -96,7 +100,15 @@ def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
 
     return MyToolConfig(
         ManagedRepos=[
-            RepoConfig(local_path=repo1_path, name="repo1"),
-            RepoConfig(local_path=repo2_path, name="repo2"),
+            RepoConfig(
+                local_path=repo1_path,
+                name="repo1",
+                # jinja_files="mkdocs.yml",  <= Not tested here
+                # static_files="docs/foo.md" <= Not tested here
+                ),
+            RepoConfig(
+                local_path=repo2_path,
+                name="repo2",
+            ),
         ]
     )
