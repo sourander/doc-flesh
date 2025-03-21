@@ -126,12 +126,15 @@ $ ls /private/var/folders/aa/hash/T/tmpe8u9pv9o
 
 ## Development notes
 
-* Add a `--dry-run` flag to the `sync` command to show what would be done without actually doing it. 
-    * The files could be written to `output/repoconfig.name/../../file.txt` for inspection.
-    * This is trickier with GitPython. It does not really have a dry-run mode. Maybe simple print the Python statements that would be executed?
-* I need to make sure this works with both HTTPS and GIT authentication. 
+* Add a `--dry-run` flag to support the commit_and_push function.
+    * ...but, how?
+* Add a `--no-commit` to skip the commit and push steps.
+    * This is useful if the change requires manual intervention
+    * Example:. `.pages` => `.nav.yml` (mkdocs-material-awesome-pages to ...-awesome-nav migration)
 
 Obvious stuff:
 
 * The tool is not yet fully functional. 
-    * The `check` command is mostly done, but the `sync` command is still in the works.
+    * The `check` command is mostly done.
+    * `sync` command is currently forced to `dry-run` for safety.'
+
