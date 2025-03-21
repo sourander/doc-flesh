@@ -41,7 +41,6 @@ def copy_static_files(repoconfig: RepoConfig):
     """Copy the static files to the destination."""
 
     base_dir = Path("~/.config/doc-flesh/static").expanduser()
-    siteinfo = repoconfig.siteinfo.model_dump()
 
     for static_file in repoconfig.static_files:
         src = base_dir / static_file

@@ -35,6 +35,6 @@ def test_append_siteinfo_missing(mock_mytoolconfig):
     mock_mytoolconfig.ManagedRepos[0].local_path /= "wrong-path"
 
     # Test that this raises an AssertionError
-    with pytest.raises(AssertionError):
+    with pytest.raises(SystemExit):
         append_siteinfo(mock_mytoolconfig)
 

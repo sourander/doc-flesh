@@ -1,4 +1,5 @@
 import yaml
+import click
 
 from tempfile import TemporaryDirectory
 from pathlib import Path
@@ -20,10 +21,11 @@ def validate_all_exists(mytoolconfig: MyToolConfig) -> bool:
 
 def append_siteinfo(mytoolconfig: MyToolConfig) -> MyToolConfig:
     """Load siteinfo.json from each repository and add it to RepoConfig.siteinfo."""
+    
+    all_valid = True
+
     for repoconfig in mytoolconfig.ManagedRepos:
-
-        all_have_valid_siteinfos = True
-
+        
         siteinfo_path = repoconfig.local_path / "siteinfo.json"
         if siteinfo_path.exists():
             try:
@@ -32,17 +34,17 @@ def append_siteinfo(mytoolconfig: MyToolConfig) -> MyToolConfig:
                 )
             except ValidationError as e:
                 print(
-                    f"❌ ERROR: Invalid siteinfo.json in {repoconfig.local_path}: {e}"
+                    f"❌ ERROR: Invalid siteinfo.json in {repoconfig.local_path}"
                 )
-                all_have_valid_siteinfos = False
+                all_valid = False
                 continue
         else:
             print(f"⚠️ WARNING: siteinfo.json not found in {repoconfig.local_path}.")
-            all_have_valid_siteinfos = False
+            all_valid = False
 
-        assert (
-            all_have_valid_siteinfos
-        ), "Aborting. Some repositories do not have a valid siteinfo.json. Read above."
+    # assert (all_valid), "Aborting. Some repositories do not have a valid siteinfo.json. Read above."
+    if not all_valid:
+        raise SystemExit("Aborting. Some repositories do not have a valid siteinfo.json. Read above.")
     return mytoolconfig
 
 
