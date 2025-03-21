@@ -16,7 +16,9 @@ class SiteInfo(BaseModel):
 
     # MkDocs
     site_name: str
+    site_name_slug: str
     site_uses_mathjax: bool = False
+    site_uses_precommit: bool = False
 
     # sourander.github.io
     category: SiteCategory

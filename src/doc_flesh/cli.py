@@ -2,7 +2,7 @@ import click
 
 from git import Repo
 
-from doc_flesh.git_utils import commit_and_push, check_all
+from doc_flesh.git_utils import add_to_staging, commit_and_push, check_all
 from doc_flesh.configreader import load_config, repo_local_paths_to_tmp
 from doc_flesh.writer import apply_jinja_template, copy_static_files
 from doc_flesh.models import RepoConfig
@@ -35,7 +35,8 @@ def check():
 
 @cli.command()
 @click.option("--dry-run", is_flag=True, help="Write in tempdir. Don't touch Git.")
-def sync(dry_run: bool):
+@click.option("--no-commit", is_flag=True, help="Add files but don't commit.")
+def sync(dry_run: bool, no_commit: bool):
     """Deploy the configured Jinja/Static files to production."""
     # Step 1: Check if all repos are safe to sync and have a valid siteinfo.json file.
     repoconfigs = load_config().ManagedRepos
@@ -43,7 +44,7 @@ def sync(dry_run: bool):
 
     # DEBUG! Setting the dry-run flag to True while the code is in development.
     # TODO: Remove before production.
-    dry_run = True
+    no_commit = True
 
     # Step 2: Overwrite the local paths with temporary directories if dry-run is enabled.
     #        This is to prevent any accidental changes to the repositories.
@@ -57,12 +58,9 @@ def sync(dry_run: bool):
         apply_jinja_template(repoconfig)
         copy_static_files(repoconfig)
         
-
-        if dry_run:
-            print(f"🔧 Dry-run: skipping the Git operations.")
-        else:
-            remote_url = Repo(repoconfig.local_path).remotes.origin.url
-            # commit_and_push(repoconfig)
-            print(f"✅ Successfully pushed changes to {remote_url}.")
+        if not dry_run:
+            add_to_staging(repoconfig)
+            if not no_commit:
+                commit_and_push(repoconfig)
     
     print("🎉 Sync complete.")

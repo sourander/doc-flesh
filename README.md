@@ -126,15 +126,14 @@ $ ls /private/var/folders/aa/hash/T/tmpe8u9pv9o
 
 ## Development notes
 
-* Add a `--dry-run` flag to support the commit_and_push function.
-    * ...but, how?
-* Add a `--no-commit` to skip the commit and push steps.
-    * This is useful if the change requires manual intervention
-    * Example:. `.pages` => `.nav.yml` (mkdocs-material-awesome-pages to ...-awesome-nav migration)
+* Triple-check the sync-logic. It is the most dangerous part of the tool.
+* Add an option to run `uv lock --upgrade` in each repository. 
+    * This should be a separate command. Sync should not be omnipotent.
 
 Obvious stuff:
 
 * The tool is not yet fully functional. 
     * The `check` command is mostly done.
-    * `sync` command is currently forced to `dry-run` for safety.'
-
+    * `sync` command is currently forced to:
+        *  `no-commit` for safety.
+        *  ... but `dry-run` is no longer forced. It can write to the actual repo dir.

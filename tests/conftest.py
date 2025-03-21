@@ -81,7 +81,8 @@ def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
     """Fixture to create a mock MyToolConfig with temporary directories."""
 
     repo1_siteinfo = SiteInfo(
-        site_name="Defined in conftest 1", 
+        site_name="Defined in conftest 1",
+        site_name_slug="defined-in-conftest-1",
         category="Learning tools", 
         related_repo="[Something](https://example.com)"
     )
@@ -91,8 +92,10 @@ def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
 
     repo2_siteinfo = SiteInfo(
         site_name="Defined in conftest 2",
+        site_name_slug="defined-in-conftest-2",
         category="Learning tools",
         site_uses_mathjax=True,
+        site_uses_precommit=True,
     )
     repo2_path = tmp_path / "repo2"
     repo2_path.mkdir()

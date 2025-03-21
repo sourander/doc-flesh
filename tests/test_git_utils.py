@@ -1,5 +1,4 @@
-
-from doc_flesh.git_utils import is_repo_safe, commit_and_push
+from doc_flesh.git_utils import is_repo_safe, commit_and_push, add_to_staging
 from git import Repo
 
 
@@ -112,6 +111,9 @@ def test_commit_and_push(setup_repos):
     another_test_file = setup_repos.local_path / "another_test.txt"
     another_test_file.write_text("Another test content")
 
+    # Add files to staging
+    add_to_staging(setup_repos.repo_config)
+
     # Call the tested function
     commit_and_push(setup_repos.repo_config)
 
@@ -120,3 +122,25 @@ def test_commit_and_push(setup_repos):
     remote_files = [line.split()[-1] for line in remote_files]
     assert "test.txt" in remote_files
     assert "another_test.txt" in remote_files
+
+def test_commit_no_changes(setup_repos):
+    """Test commit_and_push does nothing when there are no changes to commit."""
+    repo_config = setup_repos.repo_config
+
+    # Add a file to the RepoConfig
+    repo_config.jinja_files = ["test.txt"]
+
+    # Rewrite the file with the same content (no actual changes)
+    test_file = setup_repos.local_path / "test.txt"
+    test_file.write_text("Test content")  # Same content as in the initial commit
+
+    # Add files to staging
+    add_to_staging(setup_repos.repo_config)
+
+    # Call the tested function
+    commit_and_push(setup_repos.repo_config)
+    # Note: 🚫 No changes to commit for test-repo
+
+    # Assert no new commits were made after the initial commit
+    log = list(setup_repos.local_repo.iter_commits("main"))
+    assert len(log) == 1  # Only the initial commit should exist

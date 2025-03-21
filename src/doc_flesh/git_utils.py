@@ -102,20 +102,36 @@ def is_repo_safe(repoconfig: RepoConfig):
     print("✅ Repo is clean and safe for automation.", file=sys.stderr)
     return True
 
+def list_repoconfig_files(repoconfig: RepoConfig):
+    """Get the list of files to commit."""
+    files = [str(repoconfig.local_path / file) for file in repoconfig.jinja_files]
+    files += [str(repoconfig.local_path / file) for file in repoconfig.static_files]
+    return files
+
+def add_to_staging(repoconfig: RepoConfig):
+    """Add files to the staging area using GitPython."""
+    try:
+        repo = Repo(repoconfig.local_path)
+
+        # Get the list of files to commit
+        files = list_repoconfig_files(repoconfig)
+        repo.index.add(files)
+        
+        # Count how many were actually added
+        added_files = len(repo.index.diff("HEAD"))
+        print(f"✅ Added {added_files}/{len(files)} files to staging area (Rest have no changes).")
+    except GitCommandError as e:
+        print(f"❌ ERROR: Git command error: {e}", file=sys.stderr)
 
 def commit_and_push(repo_config: RepoConfig):
     """Commit and push changes in a repo using GitPython."""
     try:
         repo = Repo(repo_config.local_path)
 
-        # Get the list of files to commit
-        files = [str(repo_config.local_path / file) for file in repo_config.jinja_files]
-        files += [str(repo_config.local_path / file) for file in repo_config.static_files]
-
-
-        # Add files to the staging area
-        print(f"📂 Adding {len(files)} files to staging area...")
-        repo.index.add(files)
+        # We should not commit if there are no staged files.
+        if not repo.index.diff("HEAD"):
+            print(f"🚫 No changes to commit for {repo_config.name}")
+            return
 
         # Commit the changes
         commit_msg = "Auto-sync config files by doc-flesh"
@@ -129,6 +145,4 @@ def commit_and_push(repo_config: RepoConfig):
         print(f"✅ Successfully pushed changes to {origin.url}.")
     except GitCommandError as e:
         print(f"❌ ERROR: Git command error: {e}", file=sys.stderr)
-    except Exception as e:
-        print(f"❌ ERROR: Unexpected error: {e}", file=sys.stderr)
 
