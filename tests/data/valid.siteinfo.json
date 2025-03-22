@@ -1,0 +1,8 @@
+{
+  "site_name": "Custom Heading",
+  "site_name_slug": "custom-heading",
+  "site_uses_mathjax": false,
+  "site_uses_precommit": true,
+  "category": "Learning tools",
+  "related_repo": "[Example Site](https://www.example.com)"
+}

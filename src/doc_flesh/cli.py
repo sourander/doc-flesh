@@ -1,9 +1,8 @@
 import click
 
-from git import Repo
-
 from doc_flesh.git_utils import add_to_staging, commit_and_push, check_all
 from doc_flesh.configtools.reader import load_config, repo_local_paths_to_tmp
+from doc_flesh.configtools.generator import generate_and_write_siteinfo
 from doc_flesh.writer import apply_jinja_template, copy_static_files
 from doc_flesh.models import RepoConfig
 
@@ -64,3 +63,10 @@ def sync(dry_run: bool, no_commit: bool):
                 commit_and_push(repoconfig)
     
     print("🎉 Sync complete.")
+
+@cli.command() # Add a positional parameter to specify the path.
+@click.argument("siteinfo_dir", default=".", type=click.Path(exists=True))
+def generate_siteinfo(siteinfo_dir: str):
+    """Generate the siteinfo.json file to given path. Default: pwd"""
+    
+    generate_and_write_siteinfo(siteinfo_dir)

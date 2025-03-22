@@ -43,7 +43,7 @@ There are two sorts of files:
 
 ## Installation and Usage
 
-The tool is meant to be run locally using [uv](https://docs.astral.sh/uv/).
+The tool is meant to be run locally using [uv](https://docs.astral.sh/uv/). It can be used in the clone location like this:
 
 ```bash
 # Clone
@@ -52,6 +52,19 @@ git clone $url
 # Run
 uv run doc-flesh --help
 ```
+
+You can also install it as a tool like this:
+
+```bash
+# Either from Github or from local path
+uv tool install git+https://github.com/sourander/doc-flesh
+uv tool install /path/to/doc-flesh
+
+# Run
+doc-flesh --help
+```
+
+If you need shell completions, check [Click: Shell Completion](https://click.palletsprojects.com/en/stable/shell-completion/).
 
 ### Commands
 
@@ -122,6 +135,20 @@ $ ls /private/var/folders/aa/hash/T/tmpe8u9pv9o
     └── mkdocs.yml
 
 4 directories, 2 files
+```
+
+#### Generate Siteinfo
+
+Running the `generate-siteinfo` command generates the `siteinfo.json` file for the repositories. The target directory default is `.` (current directory). The `siteinfo.json` file is **read from** and **generated to** that directory.
+
+* IF FILE EXISTS: 
+    * Existing values are displayed for all fields that already have a valid value in JSON.
+    * Default values are displayed for all fields that do not have value in JSON.
+* IF NOT EXISTS:
+    * Default values are displayed for all fields.
+
+```
+doc-flesh generate-siteinfo [path-to-directory]
 ```
 
 ## Development notes
