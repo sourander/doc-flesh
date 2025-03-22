@@ -13,27 +13,35 @@ In the original creator's context, the affected repositories are listed at [sour
 The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. Each repository should have an absolute `local_path` and a `name` key. The `local_path` should point to the local repository's root directory. The `name` key is used for logging purposes.
 
 ```yaml
-Files: &defaults
+Basic: &defaults
   jinja_files:
     - mkdocs.yml
+    - pyproject.toml
   static_files:
     - .github/workflows/mkdocs-merge.yaml
+
+MathJax: &mathjax
+  static_files:
     - docs/javascripts/mathjax.js
 
+ExtractExerciseList: &extract_exercise_list
+  static_files:
+    - .pre-commit-config.yaml
+
 ManagedRepos:
-  # A repository using only the default Files
-  - local_path: /Users/me/Code/me/oat/
+  - local_path: /absolute/path/to/oat/
     name: Oppimispäiväkirja 101
     <<: *defaults
 
-  # A repository using files that are not common to all repos
-  - local_path: /Users/me/Code/me/repo-b/
-    name: Repo B
+  - local_path: /absolute/path/to/oat/linux-perusteet/
+    name: Linux Perusteet
     <<: *defaults
-    jinja_files:
-      - some/dynamic/config.yml
-    static_files:
-      - some/static/file/used/by/many/but/not/all.js
+    <<: *extract_exercise_list
+  
+  - local_path: /absolute/path/to/oat/ml-perusteet/
+    name: Johdatus koneoppimiseen
+    <<: *defaults
+    <<: *mathjax
 ```
 
 There are two sorts of files:
@@ -156,11 +164,21 @@ doc-flesh generate-siteinfo [path-to-directory]
 * Triple-check the sync-logic. It is the most dangerous part of the tool.
 * Add an option to run `uv lock --upgrade` in each repository. 
     * This should be a separate command. Sync should not be omnipotent.
+* Maybe the `~/.config/doc-flesh/config.yaml` should include information about required toggles, like:
 
-Obvious stuff:
+    ```yaml
+    MathJax: &mathjax
+    static_files:
+    - docs/javascripts/mathjax.js
+    required_toggles:
+    - site_uses_mathjax
+    ```
+
+    Note that the `reader.py::append_siteinfo` function already validates the Pydantic model. This could be extended to check the required toggles as well. This way, the user would need to go and run the `doc-flesh generate-siteinfo` command to update the `siteinfo.json` file before continuing.
+
+
+### Obvious WIP notes
 
 * The tool is not yet fully functional. 
-    * The `check` command is mostly done.
     * `sync` command is currently forced to:
-        *  `no-commit` for safety.
-        *  ... but `dry-run` is no longer forced. It can write to the actual repo dir.
+        *  `no-commit` for safety. Results will be manually validated, committed and pushed.
