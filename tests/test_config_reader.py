@@ -1,7 +1,7 @@
 import pytest
 
 from pathlib import Path
-from doc_flesh.configreader import append_siteinfo, validate_all_exists, load_config
+from doc_flesh.configtools.reader import append_siteinfo, validate_all_exists, load_config
 
 
 def test_validate_all_exists(mock_mytoolconfig):

@@ -3,7 +3,7 @@ import click
 from git import Repo
 
 from doc_flesh.git_utils import add_to_staging, commit_and_push, check_all
-from doc_flesh.configreader import load_config, repo_local_paths_to_tmp
+from doc_flesh.configtools.reader import load_config, repo_local_paths_to_tmp
 from doc_flesh.writer import apply_jinja_template, copy_static_files
 from doc_flesh.models import RepoConfig
 
