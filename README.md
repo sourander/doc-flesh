@@ -4,13 +4,21 @@ Ah, some flesh for [doc-skeleton](https://github.com/sourander/doc-skeleton) tem
 
 ![alt](assets/template-flow.png)
 
-**Diagram 1:** *The flow from `~/.config/.../` to X different repository directories explained as a diagram. The files are then committed and pushed to origin main.*
+**Diagram 1:** *The flow from `~/.config/.../` to X different repository directories explained as a diagram. The files are then committed and pushed to origin main. The `siteinfo.json`, used by `sourander.github.io` index site, is borrowed for site name and slug. There are placed to e.g. `mkdocs.yml` and `pyproject.toml`.*
 
-In the original creator's context, the affected repositories are listed at [sourander.github.io](https://sourander.github.io/) site. All these repositories share the same template Github project, called doc-skeleton. Syncing the changes could be done using Git submodules or clever forking and merges, but I chose to use this tool for syncing the config files. The tool allows the repositories to be more independent. Also, this allows clever tricks like running `uv lock --upgrade` in each repository to upgrade the dependencies in all repositories at once.
+All affected repositories are listed at [sourander.github.io](https://sourander.github.io/) site. All these repositories have been originally created using the same Github project, called **doc-skeleton**. This tool will work as a master data that can push changes to all repositories at once. Updates include but are not limited to:
+
+* Changes in the `mkdocs.yml` file caused by new plugins or themes.
+* Changes in the `pyproject.toml` file caused by new dependencies.
+* Changes in the `.pre-commit-config.yaml` file caused by new hooks.
+* Changes in the `.github/workflows/mkdocs-merge.yaml` file caused by new workflows.
+* Need to run `uv lock --upgrade` in all repositories.
+* Need to render the `siteinfo.json` file for a new repository.
+
 
 ## Configuration
 
-The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. Each repository should have an absolute `local_path` and a `name` key. The `local_path` should point to the local repository's root directory. The `name` key is used for logging purposes.
+The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. The schema of this file is defined in `doc_flesh/models.py` as `ManagedRepo`. The file should look something like this:
 
 ```yaml
 Basic: &defaults
@@ -23,31 +31,61 @@ Basic: &defaults
 MathJax: &mathjax
   static_files:
     - docs/javascripts/mathjax.js
+  flags:
+    site_uses_mathjax: true
 
 ExtractExerciseList: &extract_exercise_list
   static_files:
     - .pre-commit-config.yaml
+  flags:
+    site_uses_precommit: true
 
 ManagedRepos:
   - local_path: /absolute/path/to/oat/
     name: Oppimispäiväkirja 101
     <<: *defaults
 
-  - local_path: /absolute/path/to/oat/linux-perusteet/
+  - local_path: /absolute/path/to/linux-perusteet/
     name: Linux Perusteet
     <<: *defaults
     <<: *extract_exercise_list
   
-  - local_path: /absolute/path/to/oat/ml-perusteet/
+  - local_path: /absolute/path/to/ml-perusteet/
     name: Johdatus koneoppimiseen
     <<: *defaults
     <<: *mathjax
+```
+
+The site info looks like this:
+
+```json
+{
+  "site_name": "Linux Perusteet",
+  "site_name_slug": "linux-perusteet",
+  "category": "Study materials",
+  "related_repo": ""
+}
 ```
 
 There are two sorts of files:
 
 * **Jinja files**: The files are expected to have a key for each value in the `$REPO/siteinfo.json` file that is also used for updating the `sourander.github.io` site every night.
 * **Static files**: These files are copied from the HOME directory to the repository as is.
+
+### Jinja File Variables
+
+The *facts* in the rendered files, based on `templates/**/*`, gather their facts from two sources. The rule for deciding where a fact goes is simple: if the fact is needed for building the `sourander.github.io` index site, it goes to the `siteinfo.json` file. Otherwise, it goes to the `~/.config/doc-flesh/config.yaml` file. Below is a (non-exhaustive) list of facts and where they are stored.
+
+| Fact             | Site info | Config | Example                         |
+| ---------------- | --------- | ------ | ------------------------------- |
+| Site name        | X         |        | Linux Perusteet                 |
+| Site name slug   | X         |        | linux-perusteet                 |
+| Category         | X         |        | Study materials                 |
+| Related repo     | X         |        | \[Example\](http://example.com) |
+| Uses MathJax     |           | X      | true                            |
+| Uses Precommit   |           | X      | false                           |
+| Any Boolean Flag |           | X      | true/false                      |
+
 
 ## Installation and Usage
 

@@ -19,18 +19,14 @@ def handle_existing_siteinfo(siteinfo_path: Path) -> SiteInfo:
         siteinfo = SiteInfo(
             site_name=existing_data.get("site_name", ""),
             site_name_slug=existing_data.get("site_name_slug", default_site_slug),
-            site_uses_mathjax=existing_data.get("site_uses_mathjax", False),
-            site_uses_precommit=existing_data.get("site_uses_precommit", False),
             category=existing_data.get("category", SiteCategory.learning_tools),
-            related_repo=existing_data.get("related_repo", None)
+            related_repo=existing_data.get("related_repo", "")
         )
     else:
         print("[INFO] No existing siteinfo found. Creating a new one...")
         siteinfo = SiteInfo(
             site_name="",
             site_name_slug=default_site_slug,
-            site_uses_mathjax=False,
-            site_uses_precommit=False,
             category=SiteCategory.learning_tools,
             related_repo=""
         )
@@ -60,16 +56,6 @@ def questionnaire(siteinfo: SiteInfo) -> SiteInfo:
     ).ask()
     # Convert the string back to enum to avoid validation warnings
     siteinfo.category = next((c for c in SiteCategory if c.value == category_str), SiteCategory.learning_tools)
-
-    siteinfo.site_uses_mathjax = questionary.confirm(
-        "Does the site use MathJax?",
-        default=siteinfo.site_uses_mathjax
-    ).ask()
-
-    siteinfo.site_uses_precommit = questionary.confirm(
-        "Does the site use pre-commit?",
-        default=siteinfo.site_uses_precommit
-    ).ask()
 
     # Related repo link
     siteinfo.related_repo = questionary.text(

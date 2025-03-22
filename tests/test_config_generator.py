@@ -16,8 +16,6 @@ def test_handle_existing_siteinfo():
     assert isinstance(result, SiteInfo)
     assert result.site_name == expected["site_name"]
     assert result.site_name_slug == expected["site_name_slug"]
-    assert result.site_uses_mathjax == expected["site_uses_mathjax"]
-    assert result.site_uses_precommit == expected["site_uses_precommit"]
     assert result.category == expected["category"]
     assert result.related_repo == expected["related_repo"]
 
@@ -28,8 +26,6 @@ def test_handle_existing_siteinfo_no_file():
     assert isinstance(result, SiteInfo)
     assert result.site_name == ""
     assert result.site_name_slug == "data" # Parent directory name is offered by default
-    assert result.site_uses_mathjax is False
-    assert result.site_uses_precommit is False
     assert result.category == "Learning tools"
     assert result.related_repo == ""
 
@@ -43,7 +39,5 @@ def test_handle_existing_siteinfo_partial():
     assert isinstance(result, SiteInfo)
     assert result.site_name == "" 
     assert result.site_name_slug == "data" # Parent directory name is offered by default
-    assert result.site_uses_mathjax is False
-    assert result.site_uses_precommit is False
     assert result.category == expected["category"]
-    assert result.related_repo == expected["related_repo"]
+    assert result.related_repo == ""

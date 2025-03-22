@@ -42,7 +42,6 @@ def append_siteinfo(mytoolconfig: MyToolConfig) -> MyToolConfig:
             print(f"⚠️ WARNING: siteinfo.json not found in {repoconfig.local_path}.")
             all_valid = False
 
-    # assert (all_valid), "Aborting. Some repositories do not have a valid siteinfo.json. Read above."
     if not all_valid:
         raise SystemExit("Aborting. Some repositories do not have a valid siteinfo.json. Read above.")
     return mytoolconfig
@@ -77,7 +76,7 @@ def repo_local_paths_to_tmp(repoconfigs: list[RepoConfig]) -> list[RepoConfig]:
         f"🔧 All files will be written to {tmpdir} under directories with the same name as each repository."
     )
     for repoconfig in repoconfigs:
-        this_repo_dir = tmpdir / repoconfig.name
+        this_repo_dir = tmpdir / repoconfig.local_path
         this_repo_dir.mkdir(parents=True, exist_ok=True)
         repoconfig.local_path = this_repo_dir
 

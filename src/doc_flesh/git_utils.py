@@ -7,10 +7,10 @@ def check_all(repoconfigs: list[RepoConfig]):
     """Check if repositories are safe."""
     all_safe = True
     for repoconfig in repoconfigs:
-        print(f"Checking {repoconfig.name}...")
+        print(f"Checking {repoconfig.local_path}...")
 
         if not is_repo_safe(repoconfig):
-            print(f"Repository {repoconfig.name} is not safe.", file=sys.stderr)
+            print(f"Repository {repoconfig.local_path} is not safe.", file=sys.stderr)
             all_safe = False
     return all_safe
 
@@ -130,7 +130,7 @@ def commit_and_push(repo_config: RepoConfig):
 
         # We should not commit if there are no staged files.
         if not repo.index.diff("HEAD"):
-            print(f"🚫 No changes to commit for {repo_config.name}")
+            print(f"🚫 No changes to commit for {repo_config.local_path}")
             return
 
         # Commit the changes

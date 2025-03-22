@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from typing import List
 from pathlib import Path
 from enum import Enum
@@ -17,8 +17,6 @@ class SiteInfo(BaseModel):
     # MkDocs
     site_name: str
     site_name_slug: str
-    site_uses_mathjax: bool = False
-    site_uses_precommit: bool = False
 
     # sourander.github.io
     category: SiteCategory
@@ -33,14 +31,21 @@ class SiteInfo(BaseModel):
             raise ValueError("Related repo should be a markdown link.")
         return value
 
+class RepoConfigFlags(BaseModel):
+    """Boolean flags for RepoConfig."""
+    site_uses_mathjax: bool = False
+    site_uses_precommit: bool = False
+
 
 class RepoConfig(BaseModel):
     """Each entitty in list called ManagedRepos in the configuration file."""
     local_path: Path
-    name: str
     jinja_files: List[Path] = []
     static_files: List[Path] = []
     siteinfo: SiteInfo = None
+
+    # Boolean flags
+    flags: RepoConfigFlags = Field(default_factory=RepoConfigFlags)
 
 class MyToolConfig(BaseModel):
     """The ~/.config/doc-flesh/config.yaml configuration file model.

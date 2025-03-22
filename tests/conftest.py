@@ -67,7 +67,7 @@ def setup_repos(tmp_path: Path) -> Generator[SetupRepoYield, None, None]:
         local_path=local_path,
         local_repo=local_repo,
         remote_repo=remote_repo,
-        repo_config=RepoConfig(local_path=local_path, name="test-repo"),
+        repo_config=RepoConfig(local_path=local_path),
     )
 
     # No manual cleanup needed—pytest's tmp_path handles it
@@ -92,8 +92,6 @@ def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
         site_name="Defined in conftest 2",
         site_name_slug="defined-in-conftest-2",
         category="Learning tools",
-        site_uses_mathjax=True,
-        site_uses_precommit=True,
     )
     repo2_path = tmp_path / "repo2"
     repo2_path.mkdir()
