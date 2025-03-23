@@ -1,3 +1,5 @@
+import re
+
 from pydantic import BaseModel, field_validator, Field
 from typing import List
 from pathlib import Path
@@ -27,8 +29,12 @@ class SiteInfo(BaseModel):
     def validate_related_repo(cls, value:str):
         if not value:
             return value
-        if not value.startswith("["):
+        
+        # Pattern for: [Text here](url here) 
+        pattern = r"^\[.*\]\(.*\)$"
+        if not re.match(pattern, value):
             raise ValueError("Related repo should be a markdown link.")
+        
         return value
 
 class RepoConfigFlags(BaseModel):
