@@ -1,7 +1,7 @@
 import pytest
 
 from pathlib import Path
-from doc_flesh.configtools.reader import append_siteinfo, validate_all_exists, load_config
+from doc_flesh.configtools.reader import append_siteinfo, validate_all_exists, repo_local_paths_to_tmp
 
 
 def test_validate_all_exists(mock_mytoolconfig):
@@ -40,4 +40,18 @@ def test_append_siteinfo_missing(mock_mytoolconfig):
     # Test that this raises an AssertionError
     with pytest.raises(SystemExit):
         append_siteinfo(mock_mytoolconfig)
+
+
+def test_repo_local_paths_to_tmp(mock_mytoolconfig):
+    """Test that repo_local_paths_to_tmp updates local_path to temporary directories."""
+    original_paths = [repo.local_path for repo in mock_mytoolconfig.ManagedRepos]
+
+    updated_repos = repo_local_paths_to_tmp(mock_mytoolconfig.ManagedRepos)
+    updated_paths = [repo.local_path for repo in updated_repos]
+
+    # Ensure paths are updated and different from the original
+    for original, updated in zip(original_paths, updated_paths):
+        assert original != updated
+        assert updated.exists()
+
 

@@ -75,9 +75,15 @@ def repo_local_paths_to_tmp(repoconfigs: list[RepoConfig]) -> list[RepoConfig]:
     print(
         f"🔧 All files will be written to {tmpdir} under directories with the same name as each repository."
     )
-    for repoconfig in repoconfigs:
-        this_repo_dir = tmpdir / repoconfig.local_path
-        this_repo_dir.mkdir(parents=True, exist_ok=True)
-        repoconfig.local_path = this_repo_dir
 
-    return repoconfigs
+    # We will build a new list to avoid potential issues
+    updated_repoconfigs = []
+
+    for repoconfig in repoconfigs:
+        # Use only the repository's name for the temporary directory
+        this_repo_dir = tmpdir / repoconfig.local_path.name
+        this_repo_dir.mkdir(parents=True, exist_ok=True)
+        updated_repo = repoconfig.model_copy(update={"local_path": this_repo_dir})
+        updated_repoconfigs.append(updated_repo)
+
+    return updated_repoconfigs

@@ -51,8 +51,18 @@ class MyToolConfig(BaseModel):
     """The ~/.config/doc-flesh/config.yaml configuration file model.
 
     Note: 
-        We are not keeping the top-level Files key. It is only used for YAML anchoring.
+        We are only keepint the top-level ManagedRepos list in this model.
+        The rest are used for YAML anchoring (&something and *something).
     """
     ManagedRepos: List[RepoConfig]
-    # Files: ...
+
+
+class JinjaVariables(BaseModel):
+    """Model for Jinja template variables."""
+    site_name: str
+    site_name_slug: str
+    category: SiteCategory
+    related_repo: str
+    site_uses_mathjax: bool
+    site_uses_precommit: bool
 

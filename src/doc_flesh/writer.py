@@ -3,12 +3,13 @@ import shutil
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 from doc_flesh.models import RepoConfig
+from doc_flesh.models.transformations import transform_to_jinja_variables
 
 
 def apply_jinja_template(repoconfig: RepoConfig):
     """Apply Jinja template to the Template file and write it to the destination."""
 
-    print(f"📄 Applying Jinja template to {repoconfig.local_path}...")
+    print(f"📄 Applying Jinja template to {repoconfig.siteinfo.site_name}...")
 
     # Step 0: Setup the Jinja environment.
     template_dir = Path("~/.config/doc-flesh/templates").expanduser()
@@ -16,12 +17,8 @@ def apply_jinja_template(repoconfig: RepoConfig):
         loader=FileSystemLoader(template_dir), extensions=["jinja2_time.TimeExtension"]
     )
 
-    # Step 1: Use the RepoConfig.siteinfo and flags.
-    jinja_variables = repoconfig.siteinfo.model_dump()
-
-    # Let's enrich using the flags from the RepoConfig.
-    jinja_variables["site_uses_mathjax"] = repoconfig.flags.site_uses_mathjax
-    jinja_variables["site_uses_precommit"] = repoconfig.flags.site_uses_precommit
+    # Step 1: Transform RepoConfig to JinjaVariables.
+    jinja_variables = transform_to_jinja_variables(repoconfig).model_dump()
 
     # Step 2: Load the Jinja file.
     for jinjafile in repoconfig.jinja_files:
@@ -35,7 +32,7 @@ def apply_jinja_template(repoconfig: RepoConfig):
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(output)
 
-    print(f"Jinja template applied to {repoconfig.local_path}.")
+    print(f"Jinja template applied to {repoconfig.siteinfo.site_name}.")
 
 
 def copy_static_files(repoconfig: RepoConfig):
