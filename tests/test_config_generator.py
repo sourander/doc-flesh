@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from doc_flesh.configtools.generator import handle_existing_siteinfo
+from doc_flesh.configtools.siteinfo_generator import handle_existing_siteinfo
 from doc_flesh.models import SiteInfo
 
 VALID = Path("tests/data/valid.siteinfo.json")

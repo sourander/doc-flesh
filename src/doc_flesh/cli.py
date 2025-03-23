@@ -1,9 +1,9 @@
 import click
 
 from doc_flesh.git_utils import add_to_staging, commit_and_push, check_all
-from doc_flesh.configtools.reader import load_config, repo_local_paths_to_tmp
-from doc_flesh.configtools.generator import generate_and_write_siteinfo
-from doc_flesh.writer import apply_jinja_template, copy_static_files
+from doc_flesh.configtools.config_reader import load_config, repo_local_paths_to_tmp
+from doc_flesh.configtools.siteinfo_generator import generate_and_write_siteinfo
+from doc_flesh.target_file_writer import apply_jinja_template, copy_static_files
 from doc_flesh.models import RepoConfig
 
 @click.group()
