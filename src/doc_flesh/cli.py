@@ -41,10 +41,6 @@ def sync(dry_run: bool, no_commit: bool):
     repoconfigs = load_config().ManagedRepos
     run_all_checks(repoconfigs)
 
-    # DEBUG! Setting the dry-run flag to True while the code is in development.
-    # TODO: Remove before production.
-    no_commit = True
-
     # Step 2: Overwrite the local paths with temporary directories if dry-run is enabled.
     #        This is to prevent any accidental changes to the repositories.
     if dry_run:

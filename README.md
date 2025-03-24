@@ -199,24 +199,5 @@ doc-flesh generate-siteinfo [path-to-directory]
 
 ## Development notes
 
-* Triple-check the sync-logic. It is the most dangerous part of the tool.
 * Add an option to run `uv lock --upgrade` in each repository. 
     * This should be a separate command. Sync should not be omnipotent.
-* Maybe the `~/.config/doc-flesh/config.yaml` should include information about required toggles, like:
-
-    ```yaml
-    MathJax: &mathjax
-    static_files:
-    - docs/javascripts/mathjax.js
-    required_toggles:
-    - site_uses_mathjax
-    ```
-
-    Note that the `reader.py::append_siteinfo` function already validates the Pydantic model. This could be extended to check the required toggles as well. This way, the user would need to go and run the `doc-flesh generate-siteinfo` command to update the `siteinfo.json` file before continuing.
-
-
-### Obvious WIP notes
-
-* The tool is not yet fully functional. 
-    * `sync` command is currently forced to:
-        *  `no-commit` for safety. Results will be manually validated, committed and pushed.

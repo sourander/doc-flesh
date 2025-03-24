@@ -7,7 +7,6 @@ from typing import Generator
 
 from doc_flesh.models import RepoConfig, MyToolConfig, SiteInfo
 
-
 @dataclass
 class SetupRepoYield:
     temp_dir: Path
@@ -16,14 +15,6 @@ class SetupRepoYield:
     local_repo: Repo
     remote_repo: Repo
     repo_config: RepoConfig
-
-
-import pytest
-import shutil
-from pathlib import Path
-from git import Repo  # Assuming you're using GitPython
-from typing import Generator
-from doc_flesh.models import RepoConfig
 
 
 @pytest.fixture
