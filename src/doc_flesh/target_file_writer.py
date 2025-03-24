@@ -9,7 +9,7 @@ from doc_flesh.models.transformations import transform_to_jinja_variables
 def apply_jinja_template(repoconfig: RepoConfig):
     """Apply Jinja template to the Template file and write it to the destination."""
 
-    print(f"📄 Applying Jinja template to {repoconfig.siteinfo.site_name}...")
+    print(f"\n📄 Applying Jinja template to {repoconfig.siteinfo.site_name}...")
 
     # Step 0: Setup the Jinja environment.
     template_dir = Path("~/.config/doc-flesh/templates").expanduser()
