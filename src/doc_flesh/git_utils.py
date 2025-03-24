@@ -119,7 +119,7 @@ def add_to_staging(repoconfig: RepoConfig):
         
         # Count how many were actually added
         added_files = len(repo.index.diff("HEAD"))
-        print(f"✅ Added {added_files}/{len(files)} files to staging area (Rest have no changes).")
+        print(f"✅ Added {added_files}/{len(files)} files to staging area (the rest have no changes).")
     except GitCommandError as e:
         print(f"❌ ERROR: Git command error: {e}", file=sys.stderr)
 
