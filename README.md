@@ -15,6 +15,7 @@ All affected repositories are listed at [sourander.github.io](https://sourander.
 * Need to run `uv lock --upgrade` in all repositories.
 * Need to render the `siteinfo.json` file for a new repository.
 
+All files written by this tool are made **read-only** to give the user a hint that they are externally managed.
 
 ## Configuration
 
