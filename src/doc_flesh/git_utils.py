@@ -123,6 +123,16 @@ def add_to_staging(repoconfig: RepoConfig):
     except GitCommandError as e:
         print(f"❌ ERROR: Git command error: {e}", file=sys.stderr)
 
+def add_uv_lock_to_staging(repo_config: RepoConfig):
+    """Add the uv.lock file to the staging area."""
+
+    repo = Repo(repo_config.local_path)
+
+    repo.index.add([repo_config.local_path / "uv.lock"])
+    added_files = len(repo.index.diff("HEAD"))
+    if added_files:
+        print(f"✅ Added uv.lock file to staging area.")
+
 def commit_and_push(repo_config: RepoConfig):
     """Commit and push changes in a repo using GitPython."""
     try:

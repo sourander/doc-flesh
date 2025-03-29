@@ -1,4 +1,4 @@
-from doc_flesh.git_utils import is_repo_safe, commit_and_push, add_to_staging
+from doc_flesh.git_utils import is_repo_safe, commit_and_push, add_to_staging, add_uv_lock_to_staging
 from git import Repo
 
 
@@ -144,3 +144,84 @@ def test_commit_no_changes(setup_repos):
     # Assert no new commits were made after the initial commit
     log = list(setup_repos.local_repo.iter_commits("main"))
     assert len(log) == 1  # Only the initial commit should exist
+
+def test_add_uv_lock_to_staging(setup_repos):
+    """Test that add_uv_lock_to_staging correctly adds uv.lock to the staging area."""
+    repo_config = setup_repos.repo_config
+    
+    # Create a uv.lock file
+    uv_lock_file = setup_repos.local_path / "uv.lock"
+    uv_lock_file.write_text("Lock file content")
+    
+    # Call the function
+    add_uv_lock_to_staging(repo_config)
+    
+    # Check that the file is in the staging area
+    staged_files = setup_repos.local_repo.git.diff("--name-only", "--cached").splitlines()
+    assert "uv.lock" in staged_files
+
+def test_add_uv_lock_no_changes(setup_repos):
+    """Test add_uv_lock_to_staging when the file exists but has no changes."""
+    repo_config = setup_repos.repo_config
+    
+    # Create and commit the uv.lock file first
+    uv_lock_file = setup_repos.local_path / "uv.lock"
+    uv_lock_file.write_text("Original lock file")
+    setup_repos.local_repo.git.add("uv.lock")
+    setup_repos.local_repo.git.commit("-m", "Add uv.lock file")
+    
+    # Make sure the staging area is clean
+    assert not setup_repos.local_repo.index.diff("HEAD")
+    
+    # Call the function with no changes to the file
+    add_uv_lock_to_staging(repo_config)
+    
+    # Verify no new changes were staged
+    assert not setup_repos.local_repo.index.diff("HEAD")
+
+def test_add_uv_lock_with_changes(setup_repos):
+    """Test add_uv_lock_to_staging when the file exists and has changes."""
+    repo_config = setup_repos.repo_config
+    
+    # Create and commit the uv.lock file first
+    uv_lock_file = setup_repos.local_path / "uv.lock"
+    uv_lock_file.write_text("Original lock file")
+    setup_repos.local_repo.git.add("uv.lock")
+    setup_repos.local_repo.git.commit("-m", "Add uv.lock file")
+    
+    # Make a change to the file
+    uv_lock_file.write_text("Updated lock file content")
+    
+    # Call the function
+    add_uv_lock_to_staging(repo_config)
+    
+    # Verify the change was staged
+    staged_files = setup_repos.local_repo.git.diff("--name-only", "--cached").splitlines()
+    assert "uv.lock" in staged_files
+
+def test_add_uv_lock_commit_and_push(setup_repos):
+    """A tiny integration test that checks if add_uv_lock_to_staging and commit_and_push work together.
+    
+    This test:
+    1. Creates a uv.lock file
+    2. Uses add_uv_lock_to_staging to stage it
+    3. Uses commit_and_push to commit and push it
+    4. Verifies the file exists in the remote repository
+    """
+    repo_config = setup_repos.repo_config
+    
+    # Create a uv.lock file
+    uv_lock_file = setup_repos.local_path / "uv.lock"
+    uv_lock_file.write_text("Integration test lock file content")
+    
+    # Add the file to staging
+    add_uv_lock_to_staging(repo_config)
+    
+    # Commit and push the changes
+    commit_and_push(repo_config)
+    
+    # Verify that the file is now in the remote repository
+    remote_files = setup_repos.remote_repo.git.ls_tree("HEAD", r=True).splitlines()
+    remote_files = [line.split()[-1] for line in remote_files]
+
+    assert "uv.lock" in remote_files

@@ -61,4 +61,3 @@ def test_render_static_to_file_with_existing_readonly_file(tmp_path):
     # Assert
     assert dest_file.read_text() == "Updated static content"
     assert not os.access(dest_file, os.W_OK)  # File should be read-only
-

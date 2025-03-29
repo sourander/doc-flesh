@@ -102,3 +102,34 @@ def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
             ),
         ]
     )
+
+
+@pytest.fixture
+def mock_subprocess_run(monkeypatch):
+    """Fixture to mock subprocess.run for testing UV dependency updates."""
+    class MockSubprocessRun:
+        def __init__(self):
+            self.called_with_args = []
+            self.should_fail = False
+            self.command_not_found = False
+
+        def __call__(self, *args, **kwargs):
+            self.called_with_args.append((args, kwargs))
+            
+            if self.command_not_found:
+                raise FileNotFoundError("Mock 'uv' command not found")
+            
+            if self.should_fail:
+                raise subprocess.CalledProcessError(1, args[0], b"Mock error output")
+            
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout=b"", stderr=b"")
+
+        def reset(self):
+            self.called_with_args = []
+            self.should_fail = False
+            self.command_not_found = False
+
+    mock = MockSubprocessRun()
+    import subprocess
+    monkeypatch.setattr(subprocess, "run", mock)
+    return mock

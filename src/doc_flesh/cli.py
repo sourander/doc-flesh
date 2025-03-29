@@ -1,9 +1,10 @@
 import click
 
-from doc_flesh.git_utils import add_to_staging, commit_and_push, check_all
+from doc_flesh.git_utils import add_to_staging, commit_and_push, check_all, add_uv_lock_to_staging
 from doc_flesh.configtools.config_reader import load_config, repo_local_paths_to_tmp
 from doc_flesh.configtools.siteinfo_generator import generate_and_write_siteinfo
 from doc_flesh.target_file_writer import apply_jinja_template, copy_static_files
+from doc_flesh.uv_utils import update_uv_dependencies
 from doc_flesh.models import RepoConfig
 
 @click.group()
@@ -66,3 +67,26 @@ def generate_siteinfo(siteinfo_dir: str):
     """Generate the siteinfo.json file to given path. Default: pwd"""
     
     generate_and_write_siteinfo(siteinfo_dir)
+
+@cli.command()
+def uv_upgrade():
+    """Run `uv lock --upgrade` in all managed repositories."""
+    # Read the configuration file
+    repoconfigs = load_config().ManagedRepos
+
+    # Step 1: Check all repos for cleanliness.
+    all_safe = check_all(repoconfigs)
+    if not all_safe:
+        raise click.Abort()
+
+    # Step 2: Run `uv sync -upgrade` in each repository.
+    all_safe = update_uv_dependencies(repoconfigs)
+    if not all_safe:
+        raise click.Abort()
+    print("✅ All uv.lock files are up to date.")
+
+    # Step 3: Write the files based on JinjaFiles and StaticFiles and push to the remote.
+    #         If any step fails, we should abort immediately.
+    for repoconfig in repoconfigs:
+        add_uv_lock_to_staging(repoconfig)
+        commit_and_push(repoconfig)

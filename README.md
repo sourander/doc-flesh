@@ -198,7 +198,12 @@ Running the `generate-siteinfo` command generates the `siteinfo.json` file for t
 doc-flesh generate-siteinfo [path-to-directory]
 ```
 
-## Development notes
+#### UV Upgrade
 
-* Add an option to run `uv lock --upgrade` in each repository. 
-    * This should be a separate command. Sync should not be omnipotent.
+The `uv upgrade` command is used to upgrade all repositories's `uv.lock` files. Note that is is a good practice to first manually run this in ONE repository and make sure that everything works as expected. The command will run `uv lock --upgrade` in all repositories. This makes sure that none of the repositories are left behind in the upgrade process.
+
+```bash
+doc-flesh uv-upgrade
+```
+
+It is safe to run this command multiple times. It will only upgrade the `uv.lock` file if there are changes to be made, and it will only create a commit if there are changes to be made. The command will also check for Git repository dirtiness before doing any of this.
