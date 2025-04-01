@@ -19,45 +19,9 @@ All files written by this tool are made **read-only** to give the user a hint th
 
 ## Configuration
 
-The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. The schema of this file is defined in `doc_flesh/models.py` as `ManagedRepo`. The file should look something like this:
+### Site Info JSON
 
-```yaml
-Basic: &defaults
-  jinja_files:
-    - mkdocs.yml
-    - pyproject.toml
-  static_files:
-    - .github/workflows/mkdocs-merge.yaml
-
-MathJax: &mathjax
-  static_files:
-    - docs/javascripts/mathjax.js
-  flags:
-    site_uses_mathjax: true
-
-ExtractExerciseList: &extract_exercise_list
-  static_files:
-    - .pre-commit-config.yaml
-  flags:
-    site_uses_precommit: true
-
-ManagedRepos:
-  - local_path: /absolute/path/to/oat/
-    name: Oppimispäiväkirja 101
-    <<: *defaults
-
-  - local_path: /absolute/path/to/linux-perusteet/
-    name: Linux Perusteet
-    <<: *defaults
-    <<: *extract_exercise_list
-  
-  - local_path: /absolute/path/to/ml-perusteet/
-    name: Johdatus koneoppimiseen
-    <<: *defaults
-    <<: *mathjax
-```
-
-The site info looks like this:
+This tool has a dependency to `any/repo/path/siteinfo.json` file. It looks like this:
 
 ```json
 {
@@ -68,24 +32,74 @@ The site info looks like this:
 }
 ```
 
+This tool will embed those values to e.g. `mkdocs.yml` and `pyproject.toml` files. Since `doc-flesh` requires that file, but does not manage it, the `doc-flesh` provides a command for creating them. See that below (`doc-flesh generate-siteinfo`).
+
+### Config YAMLs
+
+The configuration file is a YAML file located at `~/.config/doc-flesh/config.yaml`. The file should contain a list of repositories to be managed. The schema of this file is defined in `doc_flesh/models.py` as `ManagedRepo`. The file should look something like this:
+
+```yaml
+ManagedRepos:
+  - local_path: /Users/janisou1/Code/sourander/oat/
+    features:
+      - default
+
+  - local_path: /Users/janisou1/Code/sourander/linux-perusteet/
+    features:
+      - default
+      - extract_exercise_list
+```
+
+The features are defined in `~/.config/doc-flesh/features/$FEATURE_NAME.yaml`. The file should contain a list of features to be managed. The default can be e.g.:
+
+```yaml
+jinja_files:
+  - mkdocs.yml
+  - pyproject.toml
+  - README.md
+static_files:
+  - .github/workflows/mkdocs-merge.yaml
+```
+
+It may also contain flags. The currently supported flags are: `site_uses_mathjax` and `site_uses_precommit`. Adding new flags requires changes to `src/models/transformations.py` and especially the `transform_to_jinja_variables()` function. The flags are converted to Jinja booleans and can be used in Jinja templates. Simple example would be from `feature.yaml`:
+
+```yaml
+static_files:
+  - docs/javascripts/mathjax.js
+flags:
+  site_uses_mathjax: true
+```
+
+The flag is later on used in the `mkdocs.yml` file like this:
+
+```yaml
+{%- if site_uses_mathjax %}
+  # MathJax
+  - pymdownx.arithmatex:
+      generic: true
+{% endif %}
+```
+
 There are two sorts of files:
 
 * **Jinja files**: The files are expected to have a key for each value in the `$REPO/siteinfo.json` file that is also used for updating the `sourander.github.io` site every night.
 * **Static files**: These files are copied from the HOME directory to the repository as is.
 
-### Jinja File Variables
+### What comes from where?
 
-The *facts* in the rendered files, based on `templates/**/*`, gather their facts from two sources. The rule for deciding where a fact goes is simple: if the fact is needed for building the `sourander.github.io` index site, it goes to the `siteinfo.json` file. Otherwise, it goes to the `~/.config/doc-flesh/config.yaml` file. Below is a (non-exhaustive) list of facts and where they are stored.
+The *facts* in the rendered files are gathered from two sources. The rule for deciding where a fact goes is simple: if the fact is needed for building the `sourander.github.io` index site, it goes to the `siteinfo.json` file. Otherwise, it goes to the `~/.config/doc-flesh/config.yaml` file. Below is a (non-exhaustive) list of facts and where they are stored.
 
-| Fact             | Site info | Config | Example                         |
-| ---------------- | --------- | ------ | ------------------------------- |
-| Site name        | X         |        | Linux Perusteet                 |
-| Site name slug   | X         |        | linux-perusteet                 |
-| Category         | X         |        | Study materials                 |
-| Related repo     | X         |        | \[Example\](http://example.com) |
-| Uses MathJax     |           | X      | true                            |
-| Uses Precommit   |           | X      | false                           |
-| Any Boolean Flag |           | X      | true/false                      |
+| Fact                | Site info | Config | Example                         |
+| ------------------- | --------- | ------ | ------------------------------- |
+| Site name           | X         |        | Linux Perusteet                 |
+| Site name slug      | X         |        | linux-perusteet                 |
+| Category            | X         |        | Study materials                 |
+| Related repo        | X         |        | \[Example\](http://example.com) |
+| Local path          |           | X      | `/home/my/local/repo/`          |
+| Features            |           | X      | default                         |
+| Feature Definition  |           | X      | features/default.yaml           |
+| Site uses mathjax   |           | X      | true                            |
+| Site uses precommit |           | X      | true                            |
 
 
 ## Installation and Usage

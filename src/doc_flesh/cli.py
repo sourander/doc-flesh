@@ -27,7 +27,7 @@ def check():
     """Check if the local repotories are safe to sync. The dirtiness is defined in the README."""
 
     # Read the configuration file
-    repoconfigs = load_config().ManagedRepos
+    repoconfigs = load_config()
     run_all_checks(repoconfigs)
 
     print()
@@ -39,7 +39,7 @@ def check():
 def sync(dry_run: bool, no_commit: bool):
     """Deploy the configured Jinja/Static files to production."""
     # Step 1: Check if all repos are safe to sync and have a valid siteinfo.json file.
-    repoconfigs = load_config().ManagedRepos
+    repoconfigs = load_config()
     run_all_checks(repoconfigs)
 
     # Step 2: Overwrite the local paths with temporary directories if dry-run is enabled.
@@ -72,7 +72,7 @@ def generate_siteinfo(siteinfo_dir: str):
 def uv_upgrade():
     """Run `uv lock --upgrade` in all managed repositories."""
     # Read the configuration file
-    repoconfigs = load_config().ManagedRepos
+    repoconfigs = load_config()
 
     # Step 1: Check all repos for cleanliness.
     all_safe = check_all(repoconfigs)

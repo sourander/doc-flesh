@@ -1,11 +1,21 @@
 import pytest
+import yaml
+import subprocess
 
 from pathlib import Path
 from git import Repo
 from dataclasses import dataclass
 from typing import Generator
 
-from doc_flesh.models import RepoConfig, MyToolConfig, SiteInfo
+from doc_flesh.models import (
+    RepoConfig,
+    SiteInfo,
+    ConfigEntries,
+    ConfigEntry,
+    FeatureConfig,
+    RepoConfigFlags,
+)
+
 
 @dataclass
 class SetupRepoYield:
@@ -15,7 +25,6 @@ class SetupRepoYield:
     local_repo: Repo
     remote_repo: Repo
     repo_config: RepoConfig
-
 
 @pytest.fixture
 def setup_repos(tmp_path: Path) -> Generator[SetupRepoYield, None, None]:
@@ -52,13 +61,24 @@ def setup_repos(tmp_path: Path) -> Generator[SetupRepoYield, None, None]:
     # Push to remote
     local_repo.git.push("origin", "main", set_upstream=True)
 
+    # Create siteinfo.json
+    siteinfo = SiteInfo(
+        site_name="Test Repo", site_name_slug="test-repo", category="Learning tools"
+    )
+
+    siteinfo_path = local_path / "siteinfo.json"
+    siteinfo_path.write_text(siteinfo.model_dump_json())
+
+    # Create a RepoConfig
+    repo_config = RepoConfig(local_path=local_path, siteinfo=siteinfo)
+
     yield SetupRepoYield(
         temp_dir=temp_dir,
         remote_path=remote_path,
         local_path=local_path,
         local_repo=local_repo,
         remote_repo=remote_repo,
-        repo_config=RepoConfig(local_path=local_path),
+        repo_config=repo_config,
     )
 
     # No manual cleanup needed—pytest's tmp_path handles it
@@ -66,47 +86,9 @@ def setup_repos(tmp_path: Path) -> Generator[SetupRepoYield, None, None]:
 
 
 @pytest.fixture
-def mock_mytoolconfig(tmp_path: Path) -> MyToolConfig:
-    """Fixture to create a mock MyToolConfig with temporary directories."""
-
-    repo1_siteinfo = SiteInfo(
-        site_name="Defined in conftest 1",
-        site_name_slug="defined-in-conftest-1",
-        category="Learning tools", 
-        related_repo="[Something](https://example.com)"
-    )
-    repo1_path = tmp_path / "repo1"
-    repo1_path.mkdir()
-    (repo1_path / "siteinfo.json").write_text(repo1_siteinfo.model_dump_json())
-
-    repo2_siteinfo = SiteInfo(
-        site_name="Defined in conftest 2",
-        site_name_slug="defined-in-conftest-2",
-        category="Learning tools",
-    )
-    repo2_path = tmp_path / "repo2"
-    repo2_path.mkdir()
-    (repo2_path / "siteinfo.json").write_text(repo2_siteinfo.model_dump_json())
-
-    return MyToolConfig(
-        ManagedRepos=[
-            RepoConfig(
-                local_path=repo1_path,
-                name="repo1",
-                # jinja_files="mkdocs.yml",  <= Not tested here
-                # static_files="docs/foo.md" <= Not tested here
-                ),
-            RepoConfig(
-                local_path=repo2_path,
-                name="repo2",
-            ),
-        ]
-    )
-
-
-@pytest.fixture
 def mock_subprocess_run(monkeypatch):
     """Fixture to mock subprocess.run for testing UV dependency updates."""
+
     class MockSubprocessRun:
         def __init__(self):
             self.called_with_args = []
@@ -115,14 +97,16 @@ def mock_subprocess_run(monkeypatch):
 
         def __call__(self, *args, **kwargs):
             self.called_with_args.append((args, kwargs))
-            
+
             if self.command_not_found:
                 raise FileNotFoundError("Mock 'uv' command not found")
-            
+
             if self.should_fail:
                 raise subprocess.CalledProcessError(1, args[0], b"Mock error output")
-            
-            return subprocess.CompletedProcess(args=args, returncode=0, stdout=b"", stderr=b"")
+
+            return subprocess.CompletedProcess(
+                args=args, returncode=0, stdout=b"", stderr=b""
+            )
 
         def reset(self):
             self.called_with_args = []
@@ -131,5 +115,105 @@ def mock_subprocess_run(monkeypatch):
 
     mock = MockSubprocessRun()
     import subprocess
+
     monkeypatch.setattr(subprocess, "run", mock)
     return mock
+
+@pytest.fixture
+def setup_config_file(tmp_path: Path) -> Path:
+    """This fixture creates a temporary directory with config files 
+    for testing the load_config() function.
+    
+    Created items mimicing the doc-flesh central configuration directory:
+        - config_dir/config.yaml (should be ~/.config/doc-flesh/)
+        - config_dir/features/default.yaml
+        - config_dir/features/feature1.yaml
+        - config_dir/features/feature2.yaml
+
+    Created items mimicing what the repositories would have:
+        - repo_1/siteinfo.json
+        - repo_2/siteinfo.json
+    
+    We will create TWO separate repositories with different features enabled.
+    """
+
+    """
+    jinja_files:
+    - mkdocs.yaml
+    - pyproject.toml
+    - README.md
+    static_files:
+    - .github/workflows/mkdocs-merge.yaml
+
+    Use the model to write the following data into features/default.yaml:
+    """
+
+    # Create the features directory
+    config_dir = tmp_path / "config_dir"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    features_dir = config_dir / "features"
+    features_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create the default feature file
+    feature_default_path = features_dir / "default.yaml"
+    feature_default = FeatureConfig(
+        jinja_files=["mkdocs.yaml", "pyproject.toml", "README.md"],
+        static_files=[".github/workflows/mkdocs-merge.yaml"]
+    )
+    feature_default_path.write_text(yaml.dump(feature_default.model_dump(mode="json")))
+
+    # Create the feature1 file
+    feature1_path = features_dir / "feature1.yaml"
+    feature1 = FeatureConfig(
+        jinja_files=["feature_1_specific_file.toml"],
+        static_files=["feature_1_specific_static_file.yaml"],
+        flags=RepoConfigFlags(site_uses_mathjax=True)
+    )
+    feature1_path.write_text(yaml.dump(feature1.model_dump(mode="json")))
+
+    # Create the feature2 file
+    feature2_path = features_dir / "feature2.yaml"
+    feature2 = FeatureConfig(
+        jinja_files=["feature_2_specific_file.md"],
+        static_files=["feature_2_specific_static_file.yaml"],
+        flags=RepoConfigFlags(site_uses_precommit=True)
+    )
+    # save as YAML
+    feature2_path.write_text(yaml.dump(feature2.model_dump(mode="json")))
+
+    # Create the config.yaml file
+    config_path = config_dir / "config.yaml"
+    config_entries = ConfigEntries(
+        ManagedRepos=[
+            ConfigEntry(
+                local_path=tmp_path / "repo_1",
+                features=["default", "feature1"]
+            ),
+            ConfigEntry(
+                local_path=tmp_path / "repo_2",
+                features=["default", "feature2"]
+            )
+        ]
+    )
+    config_path.write_text(yaml.dump(config_entries.model_dump(mode="json")))
+
+    # Create the siteinfo.json files for each repo
+    siteinfo1 = SiteInfo(
+        site_name="Test Repo 1",
+        site_name_slug="test-repo-1",
+        category="Learning tools"
+    )
+    siteinfo1_path = tmp_path / "repo_1" / "siteinfo.json"
+    siteinfo1_path.parent.mkdir(parents=True, exist_ok=True)
+    siteinfo1_path.write_text(yaml.dump(siteinfo1.model_dump(mode="json")))
+
+    siteinfo2 = SiteInfo(
+        site_name="Test Repo 2",
+        site_name_slug="test-repo-2",
+        category="Learning tools"
+    )
+    siteinfo2_path = tmp_path / "repo_2" / "siteinfo.json"
+    siteinfo2_path.parent.mkdir(parents=True, exist_ok=True)
+    siteinfo2_path.write_text(yaml.dump(siteinfo2.model_dump(mode="json")))
+
+    return config_path

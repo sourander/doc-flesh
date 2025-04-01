@@ -38,30 +38,41 @@ class SiteInfo(BaseModel):
         return value
 
 class RepoConfigFlags(BaseModel):
-    """Boolean flags for RepoConfig."""
+    """Boolean flags for RepoConfig that are supported and tested by doc-flesh."""
     site_uses_mathjax: bool = False
     site_uses_precommit: bool = False
 
 
 class RepoConfig(BaseModel):
-    """Each entitty in list called ManagedRepos in the configuration file."""
+    """This is the target data model that will be used by other modules in doc-flesh.
+    """
     local_path: Path
-    jinja_files: List[Path] = []
-    static_files: List[Path] = []
+    jinja_files: List[Path] = Field(default_factory=list)
+    static_files: List[Path] = Field(default_factory=list)
     siteinfo: SiteInfo = None
 
     # Boolean flags
     flags: RepoConfigFlags = Field(default_factory=RepoConfigFlags)
 
-class MyToolConfig(BaseModel):
-    """The ~/.config/doc-flesh/config.yaml configuration file model.
-
-    Note: 
-        We are only keepint the top-level ManagedRepos list in this model.
-        The rest are used for YAML anchoring (&something and *something).
+class FeatureConfig(BaseModel):
+    """A feature activated in the configuration file. They are defined in files `~/.config/doc-flesh/features/*.yaml`.
+    
+    All these will be concatenated to form the final RepoConfig.
     """
-    ManagedRepos: List[RepoConfig]
+    jinja_files: List[Path] = Field(default_factory=list)
+    static_files: List[Path] = Field(default_factory=list)
+    flags: RepoConfigFlags = Field(default_factory=RepoConfigFlags)
 
+class ConfigEntry(BaseModel):
+    """Each entry in the config.yml file. Features are activated by adding them here.
+    """
+    local_path: Path
+    features: List[str] = Field(default_factory=list)
+
+class ConfigEntries(BaseModel):
+    """All entries in the config.yml file. This is the main entry point for doc-flesh.
+    """
+    ManagedRepos: List[ConfigEntry] = Field(default_factory=list)
 
 class JinjaVariables(BaseModel):
     """Model for Jinja template variables."""

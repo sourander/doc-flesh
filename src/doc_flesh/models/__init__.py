@@ -1,3 +1,21 @@
-from doc_flesh.models.models import MyToolConfig, RepoConfig, SiteInfo, SiteCategory, JinjaVariables
+from doc_flesh.models.models import (
+    RepoConfig,
+    SiteInfo,
+    SiteCategory,
+    JinjaVariables,
+    FeatureConfig,
+    RepoConfigFlags,
+    ConfigEntries,
+    ConfigEntry,
+)
 
-__all__ = ["MyToolConfig", "RepoConfig", "SiteInfo", "SiteCategory", "JinjaVariables"]
+__all__ = [
+    "RepoConfig",
+    "SiteInfo",
+    "SiteCategory",
+    "JinjaVariables",
+    "FeatureConfig",
+    "RepoConfigFlags",
+    "ConfigEntries",
+    "ConfigEntry",
+]

@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 from jinja2 import Template
-from doc_flesh.target_file_writer import render_jinja_to_file, make_file_readonly, copy_static_files, render_static_to_file
+from doc_flesh.target_file_writer import render_jinja_to_file, make_file_readonly, render_static_to_file
 from doc_flesh.models import RepoConfig
 
 def test_render_jinja_to_file_with_existing_file(tmp_path):

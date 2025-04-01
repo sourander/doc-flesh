@@ -1,57 +1,99 @@
-import pytest
-
+from doc_flesh.configtools.config_reader import load_config, repo_local_paths_to_tmp, get_siteinfo
 from pathlib import Path
-from doc_flesh.configtools.config_reader import append_siteinfo, validate_all_exists, repo_local_paths_to_tmp
 
+def test_load_config(setup_config_file):
+    """Test the load_config wrapper function."""
 
-def test_validate_all_exists(mock_mytoolconfig):
-    """Test that validate_all_exists correctly identifies existing paths."""
-    assert validate_all_exists(mock_mytoolconfig) is True
+    repo_configs = load_config(setup_config_file)
 
-
-def test_validate_all_exists_missing(mock_mytoolconfig):
-    """Test that validate_all_exists correctly identifies missing paths."""
-    mock_mytoolconfig.ManagedRepos[0].local_path = Path("/nonexistent/path")
-    # Note: ❌ ERROR: Local path /nonexistent/path does not exist.
-    assert validate_all_exists(mock_mytoolconfig) is False
-
-
-def test_append_siteinfo(mock_mytoolconfig):
-    """Test that append_siteinfo correctly loads siteinfo.json."""
-    c = append_siteinfo(mock_mytoolconfig)
-
-    assert len(c.ManagedRepos) == 2
-
-    assert c.ManagedRepos[0].siteinfo.site_name == "Defined in conftest 1"
-    assert c.ManagedRepos[0].siteinfo.site_name_slug == "defined-in-conftest-1"
-    assert c.ManagedRepos[0].siteinfo.category == "Learning tools"
-    assert c.ManagedRepos[0].siteinfo.related_repo == "[Something](https://example.com)"
+    # Test that most of the attributes are correct
+    assert len(repo_configs) == 2
+    assert repo_configs[0].local_path == (setup_config_file.parent.parent / "repo_1").resolve()
+    assert repo_configs[1].local_path == (setup_config_file.parent.parent / "repo_2").resolve()
     
-    assert c.ManagedRepos[1].siteinfo.site_name == "Defined in conftest 2"
-    assert c.ManagedRepos[1].siteinfo.site_name_slug == "defined-in-conftest-2"
-    assert c.ManagedRepos[1].siteinfo.category == "Learning tools"
-    assert c.ManagedRepos[1].siteinfo.related_repo == ""
+    # Jinja files
+    assert len(repo_configs[0].jinja_files) == 4
+    assert len(repo_configs[1].jinja_files) == 4
+    assert Path("mkdocs.yaml") in repo_configs[0].jinja_files
+    assert Path("feature_1_specific_file.toml") in repo_configs[0].jinja_files
+    assert Path("feature_1_specific_file.toml") not in repo_configs[1].jinja_files
+    assert Path("feature_2_specific_file.md") in repo_configs[1].jinja_files
+    assert Path("feature_2_specific_file.md") not in repo_configs[0].jinja_files
 
-def test_append_siteinfo_missing(mock_mytoolconfig):
-    """Test that append_siteinfo correctly handles missing siteinfo.json."""
+    # Static files
+    assert len(repo_configs[0].static_files) == 2
+    assert len(repo_configs[1].static_files) == 2
+    assert Path("feature_1_specific_static_file.yaml") in repo_configs[0].static_files
+    assert Path("feature_2_specific_static_file.yaml") not in repo_configs[0].static_files
 
-    mock_mytoolconfig.ManagedRepos[0].local_path /= "wrong-path"
-
-    # Test that this raises an AssertionError
-    with pytest.raises(SystemExit):
-        append_siteinfo(mock_mytoolconfig)
-
-
-def test_repo_local_paths_to_tmp(mock_mytoolconfig):
-    """Test that repo_local_paths_to_tmp updates local_path to temporary directories."""
-    original_paths = [repo.local_path for repo in mock_mytoolconfig.ManagedRepos]
-
-    updated_repos = repo_local_paths_to_tmp(mock_mytoolconfig.ManagedRepos)
-    updated_paths = [repo.local_path for repo in updated_repos]
-
-    # Ensure paths are updated and different from the original
-    for original, updated in zip(original_paths, updated_paths):
-        assert original != updated
-        assert updated.exists()
+    # Check that siteinfo is there
+    assert repo_configs[0].siteinfo.site_name == "Test Repo 1"
+    assert repo_configs[1].siteinfo.site_name == "Test Repo 2"
 
 
+"""
+def repo_local_paths_to_tmp(repoconfigs: list[RepoConfig]) -> list[RepoConfig]:
+
+    # Create a Temporary Directory. It should be persistent so that users can inspect the files.
+    tmpdir = TemporaryDirectory(delete=False)
+    tmpdir = Path(tmpdir.name).resolve()
+    print(
+        f"🔧 All files will be written to {tmpdir} under directories with the same name as each repository."
+    )
+
+    # We will build a new list to avoid potential issues
+    updated_repoconfigs = []
+
+    for repoconfig in repoconfigs:
+        # Use only the repository's name for the temporary directory
+        this_repo_dir = tmpdir / repoconfig.local_path.name
+        this_repo_dir.mkdir(parents=True, exist_ok=True)
+        updated_repo = repoconfig.model_copy(update={"local_path": this_repo_dir})
+        updated_repoconfigs.append(updated_repo)
+
+    return updated_repoconfigs
+    """
+
+def test_repo_local_paths_to_tmp(setup_config_file):
+    """Test the repo_local_paths_to_tmp function."""
+
+    # Load the config
+    repo_configs = load_config(setup_config_file)
+
+    orig_path_1 = repo_configs[0].local_path.resolve()
+    orig_path_2 = repo_configs[1].local_path.resolve()
+
+    # Convert to temporary paths
+    updated_repo_configs = repo_local_paths_to_tmp(repo_configs)
+
+    # Check that they are still directories
+    for repo_config in updated_repo_configs:
+        assert repo_config.local_path.is_dir()
+
+    # Check that the original paths are not the same as the updated paths
+    assert updated_repo_configs[0].local_path != orig_path_1
+    assert updated_repo_configs[1].local_path != orig_path_2
+
+
+"""
+def get_siteinfo(siteinfo_dir: Path) -> SiteInfo:
+
+    siteinfo_path = siteinfo_dir / "siteinfo.json"
+    if not siteinfo_path.exists():
+        raise FileNotFoundError(f"Site info file not found: {siteinfo_path}")
+
+    siteinfo_data = yaml.safe_load(siteinfo_path.read_text())
+    return SiteInfo(**siteinfo_data)
+    """
+
+def test_get_siteinfo(setup_config_file):
+    """Test the get_siteinfo function."""
+
+    # Load the config
+    repo_configs = load_config(setup_config_file)
+
+    # Get the siteinfo for the first repo
+    siteinfo = get_siteinfo(repo_configs[0].local_path)
+
+    # Check that the siteinfo is correct
+    assert siteinfo.site_name == "Test Repo 1"
