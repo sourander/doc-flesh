@@ -12,6 +12,7 @@ class SiteCategory(str, Enum):
     learning_tools = "Learning tools"
     study_materials = "Study materials"
     templates = "Templates"
+    inactive = "Inactive"
 
 class SiteInfo(BaseModel):
     """Each repository should have a site info file in the project root."""
@@ -49,7 +50,7 @@ class RepoConfig(BaseModel):
     local_path: Path
     jinja_files: List[Path] = Field(default_factory=list)
     static_files: List[Path] = Field(default_factory=list)
-    siteinfo: SiteInfo = None
+    siteinfo: SiteInfo | None = None
 
     # Boolean flags
     flags: RepoConfigFlags = Field(default_factory=RepoConfigFlags)

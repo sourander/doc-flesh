@@ -1,6 +1,6 @@
 [project]
 name = "doc-flesh"
-version = "0.1.0"
+version = "0.1.1"
 description = "This tool allows hosting canonical config files in HOME directory and syncing those to ALL repositories based on doc-skeleton locally."
 readme = "README.md"
 authors = [

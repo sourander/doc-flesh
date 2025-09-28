@@ -84,7 +84,7 @@ def write_siteinfo(siteinfo: SiteInfo, path: Path):
     print(f"[INFO] Siteinfo written to {path}")
 
 
-def generate_and_write_siteinfo(path: Path):
+def generate_and_write_siteinfo(path: Path | str):
     """Generate and write the siteinfo.json file to the given path."""
     # To absolute path
     siteinfo_dir = Path(path).expanduser().resolve()
