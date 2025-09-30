@@ -3,7 +3,7 @@ import click
 
 from tempfile import TemporaryDirectory
 from pathlib import Path
-from doc_flesh.models import RepoConfig, SiteInfo, FeatureConfig, RepoConfigFlags, ConfigEntries, ConfigEntry
+from doc_flesh.models import RepoConfig, SiteInfo, EmptySiteInfo, FeatureConfig, RepoConfigFlags, ConfigEntries, ConfigEntry
 from pydantic import ValidationError
 
 CONFIG = Path("~/.config/doc-flesh/config.yaml").expanduser()
@@ -19,10 +19,14 @@ def validate_all_exists(config_entries: ConfigEntries) -> bool:
 
 
 def get_siteinfo(siteinfo_dir: Path) -> SiteInfo:
-    """Load siteinfo.json from each repository and add it to RepoConfig.siteinfo."""
+    """Load siteinfo.json from each repository and add it to RepoConfig.siteinfo.
+    
+    If siteinfo.json doesn't exist, returns EmptySiteInfo with sensible defaults.
+    """
     siteinfo_path = siteinfo_dir / "siteinfo.json"
     if not siteinfo_path.exists():
-        raise FileNotFoundError(f"Site info file not found: {siteinfo_path}")
+        print(f"⚠️  No siteinfo.json found in {siteinfo_dir}, using defaults")
+        return EmptySiteInfo()
 
     siteinfo_data = yaml.safe_load(siteinfo_path.read_text())
     return SiteInfo(**siteinfo_data)

@@ -10,6 +10,8 @@ from typing import Generator
 from doc_flesh.models import (
     RepoConfig,
     SiteInfo,
+    EmptySiteInfo,
+    SiteCategory,
     ConfigEntries,
     ConfigEntry,
     FeatureConfig,
@@ -63,7 +65,7 @@ def setup_repos(tmp_path: Path) -> Generator[SetupRepoYield, None, None]:
 
     # Create siteinfo.json
     siteinfo = SiteInfo(
-        site_name="Test Repo", site_name_slug="test-repo", category="Learning tools"
+        site_name="Test Repo", site_name_slug="test-repo", category=SiteCategory.learning_tools
     )
 
     siteinfo_path = local_path / "siteinfo.json"
@@ -157,16 +159,16 @@ def setup_config_file(tmp_path: Path) -> Path:
     # Create the default feature file
     feature_default_path = features_dir / "default.yaml"
     feature_default = FeatureConfig(
-        jinja_files=["mkdocs.yaml", "pyproject.toml", "README.md"],
-        static_files=[".github/workflows/mkdocs-merge.yaml"]
+        jinja_files=[Path("mkdocs.yaml"), Path("pyproject.toml"), Path("README.md")],
+        static_files=[Path(".github/workflows/mkdocs-merge.yaml")]
     )
     feature_default_path.write_text(yaml.dump(feature_default.model_dump(mode="json")))
 
     # Create the feature1 file
     feature1_path = features_dir / "feature1.yaml"
     feature1 = FeatureConfig(
-        jinja_files=["feature_1_specific_file.toml"],
-        static_files=["feature_1_specific_static_file.yaml"],
+        jinja_files=[Path("feature_1_specific_file.toml")],
+        static_files=[Path("feature_1_specific_static_file.yaml")],
         flags=RepoConfigFlags(site_uses_mathjax=True)
     )
     feature1_path.write_text(yaml.dump(feature1.model_dump(mode="json")))
@@ -174,8 +176,8 @@ def setup_config_file(tmp_path: Path) -> Path:
     # Create the feature2 file
     feature2_path = features_dir / "feature2.yaml"
     feature2 = FeatureConfig(
-        jinja_files=["feature_2_specific_file.md"],
-        static_files=["feature_2_specific_static_file.yaml"],
+        jinja_files=[Path("feature_2_specific_file.md")],
+        static_files=[Path("feature_2_specific_static_file.yaml")],
         flags=RepoConfigFlags(site_uses_precommit=True)
     )
     # save as YAML
@@ -201,7 +203,7 @@ def setup_config_file(tmp_path: Path) -> Path:
     siteinfo1 = SiteInfo(
         site_name="Test Repo 1",
         site_name_slug="test-repo-1",
-        category="Learning tools"
+        category=SiteCategory.learning_tools
     )
     siteinfo1_path = tmp_path / "repo_1" / "siteinfo.json"
     siteinfo1_path.parent.mkdir(parents=True, exist_ok=True)
@@ -210,7 +212,7 @@ def setup_config_file(tmp_path: Path) -> Path:
     siteinfo2 = SiteInfo(
         site_name="Test Repo 2",
         site_name_slug="test-repo-2",
-        category="Learning tools"
+        category=SiteCategory.learning_tools
     )
     siteinfo2_path = tmp_path / "repo_2" / "siteinfo.json"
     siteinfo2_path.parent.mkdir(parents=True, exist_ok=True)

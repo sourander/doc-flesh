@@ -1,6 +1,7 @@
 from doc_flesh.models.models import (
     RepoConfig,
     SiteInfo,
+    EmptySiteInfo,
     SiteCategory,
     JinjaVariables,
     FeatureConfig,
@@ -12,6 +13,7 @@ from doc_flesh.models.models import (
 __all__ = [
     "RepoConfig",
     "SiteInfo",
+    "EmptySiteInfo",
     "SiteCategory",
     "JinjaVariables",
     "FeatureConfig",

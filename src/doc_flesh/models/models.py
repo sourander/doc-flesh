@@ -38,6 +38,22 @@ class SiteInfo(BaseModel):
         
         return value
 
+
+class EmptySiteInfo(SiteInfo):
+    """Default SiteInfo used when no siteinfo.json exists or when creating test instances."""
+    
+    def __init__(self, **data):
+        # Provide sensible defaults
+        defaults = {
+            "site_name": "Unnamed Site",
+            "site_name_slug": "unnamed-site",
+            "category": SiteCategory.inactive,
+            "related_repo": ""
+        }
+        # Allow overrides via **data
+        defaults.update(data)
+        super().__init__(**defaults)
+
 class RepoConfigFlags(BaseModel):
     """Boolean flags for RepoConfig that are supported and tested by doc-flesh."""
     site_uses_mathjax: bool = False
@@ -50,7 +66,7 @@ class RepoConfig(BaseModel):
     local_path: Path
     jinja_files: List[Path] = Field(default_factory=list)
     static_files: List[Path] = Field(default_factory=list)
-    siteinfo: SiteInfo | None = None
+    siteinfo: SiteInfo = Field(default_factory=EmptySiteInfo)
 
     # Boolean flags
     flags: RepoConfigFlags = Field(default_factory=RepoConfigFlags)
