@@ -23,6 +23,11 @@ def run_all_checks(repoconfigs: list[RepoConfig]) -> bool:
     return True
 
 @cli.command()
+def version():
+    """Show the version of doc-flesh (hardcoded for now)."""
+    print(f"doc-flesh is 0.1.1")
+
+@cli.command()
 def check():
     """Check if the local repotories are safe to sync. The dirtiness is defined in the README."""
 
