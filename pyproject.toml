@@ -1,6 +1,6 @@
 [project]
 name = "doc-flesh"
-version = "0.1.1" # Remember to update also in cli.py
+version = "0.1.2" # Remember to update also in cli.py
 description = "This tool allows hosting canonical config files in HOME directory and syncing those to ALL repositories based on doc-skeleton locally."
 readme = "README.md"
 authors = [

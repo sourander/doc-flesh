@@ -64,7 +64,19 @@ def convert_to_repo_config(entry: ConfigEntry, yaml_path: Path) -> RepoConfig:
     for feature in feature_configs:
         combined_jinja_files.extend(feature.jinja_files)
         combined_static_files.extend(feature.static_files)
-        combined_flags = combined_flags.model_copy(update=feature.flags.model_dump())
+        
+        # Merge flags properly: combine individual flag values instead of replacing entire object
+        # Get current flag values as dict
+        current_flags = combined_flags.model_dump()
+        feature_flags = feature.flags.model_dump()
+        
+        # Merge individual flag values (OR operation for boolean flags)
+        for flag_name, flag_value in feature_flags.items():
+            if flag_value:  # Only set to True if the feature sets it to True
+                current_flags[flag_name] = True
+        
+        # Create new combined_flags object with merged values
+        combined_flags = RepoConfigFlags(**current_flags)
 
     # Remove duplicates
     combined_jinja_files = list(set(combined_jinja_files))

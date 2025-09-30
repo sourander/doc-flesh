@@ -25,7 +25,7 @@ def run_all_checks(repoconfigs: list[RepoConfig]) -> bool:
 @cli.command()
 def version():
     """Show the version of doc-flesh (hardcoded for now)."""
-    print(f"doc-flesh is 0.1.1")
+    print(f"doc-flesh is 0.1.2")
 
 @cli.command()
 def check():
